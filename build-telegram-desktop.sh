@@ -31,7 +31,7 @@ extract()
 return_and_mark()
 {
     if [ -z "$1" ]; then
-        log "wrong params for install_and_mark"
+        log "wrong params for return_and_mark"
         exit 1
     fi
     log "leaving library dir $(basename `pwd`)"
@@ -147,7 +147,7 @@ if ! already_done zlib; then
 
     ./configure
     make
-    install_and_mark zlib
+    install_return_and_mark zlib
 fi
 
 if ! already_done opus; then
