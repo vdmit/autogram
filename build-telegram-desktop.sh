@@ -204,3 +204,43 @@ if ! already_done openal-soft; then
     install_and_mark openal-soft
 fi
 
+
+if ! already_done openssl; then
+    prepare_source_from_git openssl "https://github.com/openssl/openssl"
+    git checkout OpenSSL_1_0_2-stable
+    ./config
+    make
+    install_and_mark openssl
+fi
+
+if ! already_done libxkbcommon; then
+    inst xutils-dev bison python-xcbgen
+    prepare_source_from_git libxkbcommon "https://github.com/xkbcommon/libxkbcommon.git"
+    ./autogen.sh --disable-x11
+    make
+    install_and_mark libxkbcommon
+fi
+
+if ! already_done qt; then
+	prepare_source_from_git "qt5_6_2" "git://code.qt.io/qt/qt5.git"
+	qt_tag="v5.6.2"
+	perl init-repository --module-subset=qtbase,qtimageformats
+	git checkout "$qt_tag"
+	cd qtimageformats && git checkout "$qt_tag" && cd ..
+	cd qtbase && git checkout "$qt_tag" && git apply ../../../tdesktop/Telegram/Patches/qtbase_5_6_2.diff && cd ..
+
+	inst libxcb1-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-icccm4-dev libxcb-render-util0-dev libxcb-util0-dev libxrender-dev libasound-dev libpulse-dev libxcb-sync0-dev libxcb-xfixes0-dev libxcb-randr0-dev libx11-xcb-dev libffi-dev
+	# cwd is qt root dir here
+    ./configure -prefix "/usr/local/tdesktop/Qt-5.6.2" -release -force-debug-info -opensource -confirm-license -qt-zlib -qt-libpng -qt-libjpeg -qt-freetype -qt-harfbuzz -qt-pcre -qt-xcb -qt-xkbcommon-x11 -no-opengl -no-gtkstyle -static -openssl-linked -nomake examples -nomake tests
+    make -j4
+    install_and_mark qt
+fi
+
+if ! already_done breakpad; then
+    prepare_source_from_git breakpad "https://chromium.googlesource.com/breakpad/breakpad"
+    git clone https://chromium.googlesource.com/linux-syscall-support src/third_party/lss
+    ./configure --prefix=$PWD
+    make
+    install_and_mark breakpad
+fi
+
