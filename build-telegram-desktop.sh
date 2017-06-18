@@ -28,26 +28,21 @@ extract()
     tar -xvf "$@"
 }
 
-minstall()
-{
-    sudo make install
-}
-
-mark_done()
+return_and_mark()
 {
     if [ -z "$1" ]; then
         log "wrong params for install_and_mark"
         exit 1
     fi
+    log "leaving library dir $(basename `pwd`)"
+    cd ..
     touch "$1.done"
 }
 
-install_and_mark()
+install_return_and_mark()
 {
-    minstall
-	log "leaving $(basename `pwd`)"
-    cd ..
-	mark_done "$1"
+    sudo make install
+    return_and_mark "$1"
 }
 
 already_done()
@@ -163,7 +158,7 @@ if ! already_done opus; then
     ./autogen.sh
     ./configure
     make
-    install_and_mark opus
+    install_return_and_mark opus
 fi
 
 log "building FFmpeg and Co."
@@ -173,14 +168,14 @@ if ! already_done libva; then
 
 	./autogen.sh --enable-static
 	make
-	install_and_mark libva
+	install_return_and_mark libva
 fi
 
 if ! already_done libvdpau; then
     prepare_source_from_git "libvdpau" "git://anongit.freedesktop.org/vdpau/libvdpau"
 	./autogen.sh --enable-static
 	make
-	install_and_mark libvdpau
+	install_return_and_mark libvdpau
 fi
 
 if ! already_done ffmpeg; then
@@ -193,7 +188,7 @@ if ! already_done ffmpeg; then
 	./configure --prefix=/usr/local --disable-programs --disable-doc --disable-everything --enable-protocol=file --enable-libopus --enable-decoder=aac --enable-decoder=aac_latm --enable-decoder=aasc --enable-decoder=flac --enable-decoder=gif --enable-decoder=h264 --enable-decoder=h264_vdpau --enable-decoder=mp1 --enable-decoder=mp1float --enable-decoder=mp2 --enable-decoder=mp2float --enable-decoder=mp3 --enable-decoder=mp3adu --enable-decoder=mp3adufloat --enable-decoder=mp3float --enable-decoder=mp3on4 --enable-decoder=mp3on4float --enable-decoder=mpeg4 --enable-decoder=mpeg4_vdpau --enable-decoder=msmpeg4v2 --enable-decoder=msmpeg4v3 --enable-decoder=opus --enable-decoder=pcm_alaw --enable-decoder=pcm_alaw_at --enable-decoder=pcm_f32be --enable-decoder=pcm_f32le --enable-decoder=pcm_f64be --enable-decoder=pcm_f64le --enable-decoder=pcm_lxf --enable-decoder=pcm_mulaw --enable-decoder=pcm_mulaw_at --enable-decoder=pcm_s16be --enable-decoder=pcm_s16be_planar --enable-decoder=pcm_s16le --enable-decoder=pcm_s16le_planar --enable-decoder=pcm_s24be --enable-decoder=pcm_s24daud --enable-decoder=pcm_s24le --enable-decoder=pcm_s24le_planar --enable-decoder=pcm_s32be --enable-decoder=pcm_s32le --enable-decoder=pcm_s32le_planar --enable-decoder=pcm_s64be --enable-decoder=pcm_s64le --enable-decoder=pcm_s8 --enable-decoder=pcm_s8_planar --enable-decoder=pcm_u16be --enable-decoder=pcm_u16le --enable-decoder=pcm_u24be --enable-decoder=pcm_u24le --enable-decoder=pcm_u32be --enable-decoder=pcm_u32le --enable-decoder=pcm_u8 --enable-decoder=pcm_zork --enable-decoder=vorbis --enable-decoder=wavpack --enable-decoder=wmalossless --enable-decoder=wmapro --enable-decoder=wmav1 --enable-decoder=wmav2 --enable-decoder=wmavoice --enable-encoder=libopus --enable-hwaccel=h264_vaapi --enable-hwaccel=h264_vdpau --enable-hwaccel=mpeg4_vaapi --enable-hwaccel=mpeg4_vdpau --enable-parser=aac --enable-parser=aac_latm --enable-parser=flac --enable-parser=h264 --enable-parser=mpeg4video --enable-parser=mpegaudio --enable-parser=opus --enable-parser=vorbis --enable-demuxer=aac --enable-demuxer=flac --enable-demuxer=gif --enable-demuxer=h264 --enable-demuxer=mov --enable-demuxer=mp3 --enable-demuxer=ogg --enable-demuxer=wav --enable-muxer=ogg --enable-muxer=opus
 
 	make
-	install_and_mark ffmpeg
+	install_return_and_mark ffmpeg
 fi
 
 if ! already_done portaudio; then
@@ -202,7 +197,7 @@ if ! already_done portaudio; then
     prepare_source_from_http portaudio "$pa_tar" "http://www.portaudio.com/archives/$pa_tar"
     ./configure
     make
-    install_and_mark portaudio
+    install_return_and_mark portaudio
 fi
 
 if ! already_done openal-soft; then
@@ -212,9 +207,9 @@ if ! already_done openal-soft; then
     cmake -D LIBTYPE:STRING=STATIC ..
     make
     # we're in 'build' subdir => cannot use main macro here
-    minstall
-    cd ../..
-    mark_done openal-soft
+    sudo make install
+    cd ..
+    return_and_mark openal-soft
 fi
 
 if ! already_done openssl; then
@@ -222,7 +217,7 @@ if ! already_done openssl; then
     git checkout OpenSSL_1_0_2-stable
     ./config
     make
-    install_and_mark openssl
+    install_return_and_mark openssl
 fi
 
 if ! already_done libxkbcommon; then
@@ -230,7 +225,7 @@ if ! already_done libxkbcommon; then
     prepare_source_from_git libxkbcommon "https://github.com/xkbcommon/libxkbcommon.git"
     ./autogen.sh --disable-x11
     make
-    install_and_mark libxkbcommon
+    install_return_and_mark libxkbcommon
 fi
 
 if ! already_done qt; then
@@ -245,7 +240,7 @@ if ! already_done qt; then
 	# cwd is qt root dir here
     ./configure -prefix "/usr/local/tdesktop/Qt-5.6.2" -release -force-debug-info -opensource -confirm-license -qt-zlib -qt-libpng -qt-libjpeg -qt-freetype -qt-harfbuzz -qt-pcre -qt-xcb -qt-xkbcommon-x11 -no-opengl -no-gtkstyle -static -openssl-linked -nomake examples -nomake tests
     make -j4
-    install_and_mark qt
+    install_return_and_mark qt
 fi
 
 if ! already_done breakpad; then
@@ -253,14 +248,15 @@ if ! already_done breakpad; then
     git clone https://chromium.googlesource.com/linux-syscall-support src/third_party/lss
     ./configure --prefix=$PWD
     make
-    install_and_mark breakpad
+    # installing breakpad locally => no sudo
+    make install
+    return_and_mark breakpad
 fi
 
 if ! already_done gyp; then
 	prepare_source_from_git gyp "https://chromium.googlesource.com/external/gyp"
 	git apply ../../tdesktop/Telegram/Patches/gyp.diff
-	cd ..
-	mark_done gyp
+	return_and_mark gyp
 fi
 
 if ! already_done cmake; then
@@ -268,6 +264,18 @@ if ! already_done cmake; then
 	prepare_source_from_http "$cmake_dir" "${cmake_dir}.tar.gz" "https://cmake.org/files/v3.6/${cmake_dir}.tar.gz"
 	./configure
 	make
-	mark_done cmake
+    return_and_mark cmake
 fi
+
+log "all libraries are OK, building Telegram itself"
+# we're in Libraries now
+log "configuring gyp"
+cd ../tdesktop/Telegram
+gyp/refresh.sh
+
+#cd ../out/Release
+cd ../out/Debug
+
+log "making Telegram Desktop"
+make
 
