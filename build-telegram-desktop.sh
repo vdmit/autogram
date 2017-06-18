@@ -6,6 +6,8 @@
 # (c) 2017 Dmitry Veltishchev <dm.velt@ya.ru> (github:vdmit)
 # See LICENSE.md for legal info
 
+TDESKTOP_REPO="https://github.com/telegramdesktop/tdesktop.git"
+
 set -e
 
 inst()
@@ -15,7 +17,7 @@ inst()
 
 log()
 {
-    echo "`date +%Y.%m.%d-%H-%M:%S`" "$@"
+    echo "[autogram] `date +%Y.%m.%d-%H:%M:%S`" "$@"
 }
 
 fetch()
@@ -140,7 +142,7 @@ mkdir -p "$libs_dir"
 cd "$build_dir"
 log "Cloning TelegramDesktop from GitHub"
 if ! [ -d "$repo_dir" ]; then
-    git clone --recursive https://github.com/telegramdesktop/tdesktop.git
+    git clone --recursive "$TDESKTOP_REPO" tdesktop
 else:
     log "tdesktop repo already exists, skipping clone"
 fi
