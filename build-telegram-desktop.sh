@@ -114,6 +114,16 @@ prepare_source_from_git()
 
 inst git
 inst g++
+
+log "Checking for GCC version"
+gcc -dumpversion
+
+gcc_mver=`gcc -dumpversion | grep -oP "^[0-9]+"`
+if [ $gcc_mver -le 5 ]; then
+    log "Your GCC have version 5.x or earler. Please install GCC 6.x or above."
+    exit 1
+fi
+
 inst libtool automake autoconf build-essential pkg-config
 inst wget
 
