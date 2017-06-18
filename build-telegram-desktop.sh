@@ -33,22 +33,32 @@ minstall()
     sudo make install
 }
 
-install_and_mark()
+mark_done()
 {
     if [ -z "$1" ]; then
         log "wrong params for install_and_mark"
         exit 1
     fi
+    touch "$1.done"
+}
+
+install_and_mark()
+{
     minstall
 	log "leaving $(basename `pwd`)"
     cd ..
-    touch "$1.done"
+	mark_done "$1"
 }
 
 already_done()
 {
     if [ -z "$1" ]; then
         log "wrong params for already_done"
+        exit 1
+    fi
+    cur_dir=$(basename `pwd`)
+    if [ "$cur_dir" != "Libraries" ]; then
+        log "script is broken: we're not in root of Libraries dir."
         exit 1
     fi
 
@@ -201,9 +211,11 @@ if ! already_done openal-soft; then
     inst cmake
     cmake -D LIBTYPE:STRING=STATIC ..
     make
-    install_and_mark openal-soft
+    # we're in 'build' subdir => cannot use main macro here
+    minstall
+    cd ../..
+    mark_done openal-soft
 fi
-
 
 if ! already_done openssl; then
     prepare_source_from_git openssl "https://github.com/openssl/openssl"
@@ -242,5 +254,20 @@ if ! already_done breakpad; then
     ./configure --prefix=$PWD
     make
     install_and_mark breakpad
+fi
+
+if ! already_done gyp; then
+	prepare_source_from_git gyp "https://chromium.googlesource.com/external/gyp"
+	git apply ../../tdesktop/Telegram/Patches/gyp.diff
+	cd ..
+	mark_done gyp
+fi
+
+if ! already_done cmake; then
+	cmake_dir="cmake-3.6.2"
+	prepare_source_from_http "$cmake_dir" "${cmake_dir}.tar.gz" "https://cmake.org/files/v3.6/${cmake_dir}.tar.gz"
+	./configure
+	make
+	mark_done cmake
 fi
 
